@@ -8,11 +8,6 @@
 * Be aware of rising **technical debt**.
 
 # 1.- Don’t be clever; be clear
-* It’s not about using the quickest algorithm or the fanciest technology.
-* It’s about mapping the problem domain into code as clearly as possible.
-* Keep clarifying and cleaning your program as it evolves.
-* Give good names to things.
-
 > The best writing is rewriting.
 
 E.B. White
@@ -26,7 +21,13 @@ Alan Perlis
 
 Donald Knuth
 
-# 3.- Focus on your data structures
+# 1.- Don’t be clever; be clear
+* It’s not about using the quickest algorithm or the fanciest technology.
+* It’s about mapping the problem domain into code as clearly as possible.
+* Keep clarifying and cleaning your program as it evolves.
+* Give good names to things.
+
+# 2.- Focus on your data structures
 * Loops and conditionals are a done deal — like bouncing the ball in basketball.
 * Your data structures drive your algorithms.
 
@@ -37,20 +38,58 @@ Donald Knuth
 Fred Brooks in *The Mythical Man-Month* 
 <br/>(Recommended book)
 
-# 4.- Program with pen and paper,
-# or marker and whiteboard
+# 2.- Focus on your data structures
+## Example 1/3
+Design and algorithm to solve:
+
+* Problem: given an array of numbers ```nums```, and a radius ```r```,
+cluster the numbers in order to get a (kind-of) sparse histogram
+with precision ```r```.
+* We don't want a proper histogram, because most entries in the histogram
+would be 0. We're likely to have fewer than 10 clusters, and want 1/100-th
+precision.
+* Example: ```nums``` = [1.2, 1.3, 5, 5.1, 5.5], ```r``` = 0.2 ➔ 1.2 × 2, 5 × 2, 5.5 × 1
+
+# 2.- Focus on your data structures
+## Example 2/3
+I asked my engineering colleagues. Solutions proposed tended to center on signal
+processing, kernels and convolutions or, generally, "matlabby" thinking.
+
+# 2.- Focus on your data structures
+## Example 3/3
+Now, define:
+
+	cluster {
+		value float,
+		count int
+	}
+
+Restate the problem: we want algorithm ```clusterNumbers```, such that
+
+	clusterNumbers(nums float[], r float) ➔ cluster[]
+
+Imagine that we have a cluster array. If we are given a new number
+```x``` to cluster, do we know what to do?
+
+	addToClusters(x float, r float, clusters cluster[]) ➔ cluster[]
+
+Does this clarify the problem?
+
+
+# 3.- Program with pen and paper
+## or marker and whiteboard
 ## … some of the time
 * De-focus from syntax and micro detail.
-* Focus at a higher level, get a broader view.
+* Focus on high level, get a broad view.
 * Iterate on design ideas in this medium.
 
-# 5.- Diagram the flow of data in your program
-## cf. 3 and 4
+# 4.- Diagram the flow of data in your program
+## cf. 2 and 3
 * Flow charts for loops/conditionals aren’t much use.
 * Things like UML diagrams, again, not that useful.
 * Your data flow tells you what needs to happen where.
 
-# 6.- Separate interface from implementation
+# 5.- Separate interface from implementation
 ## ie. think of modules
 * Think of each of your modules as a service to be called by others.
 * What is relevant for the users? This is your interface.
@@ -61,9 +100,84 @@ Fred Brooks in *The Mythical Man-Month*
 David Parnas in *On the Criteria to Be Used in Decomposing Systems into Modules*
 <br/>(Recommended paper)
 
-# 2.- Separate data from presentation
+# 5.- Separate interface from implementation
+## Example 1/5
+We're building a game with several kinds of enemy ships. We commision
+Giulio to write a relativistic motion enemy. We commission Nuria to write
+a magneto-hydrodynamic submarine enemy.
+
+# 5.- Separate interface from implementation
+## Example 2/5
+Giulio's code:
+
+	func GravityAt(...) {...}
+	func Speed(...) {...}
+	...
+
+Nuria's code:
+
+	func MagneticFieldAt(...) {...}
+	func FriggingLaserBeam(...) {...}
+	...
+
+# 5.- Separate interface from implementation
+## Example 3/5
+The animation loop is very complex, and needs to know details of relativity
+and magneto-hydrodynamics.
+
+	func AnimationLoop() {
+		forever {
+			canvas = clearCanvas()
+			for foe in AllFoes {
+				if foe is Relativistic {
+					foe.GravityAt(...)
+					...
+				} else if is MagnetoHydrodynamic {
+					..
+				}
+			}
+		}
+	}
+
+# 5.- Separate interface from implementation
+## Example 4/5
+Let's do it another way. The animation loop requires only that enemies be
+able to compute their next state, and that they be able to draw
+themselves on a canvas.
+
+Giulio's new code: 
+
+	func NextState(t time.Time) {...}
+	func DrawOn(canvas Canvas) {...}
+	-- Hidden ---
+	func GravityAt(...) {...}
+	...
+
+Nuria's new code:
+
+	func NextState(t time.Time) {...}
+	func DrawOn(canvas Canvas) {...}
+	-- Hidden ---
+	func MagneticFieldAt(...) {...}
+	...
+
+# 5.- Separate interface from implementation
+## Example 5/5
+The new animation loop.
+
+	func AnimationLoop() {
+		forever {
+			canvas = clearCanvas()
+			for foe in AllFoes {
+				foe.NextState(t)
+				foe.DrawOn(canvas)
+			}
+		}
+	}
+
+# 6.- Separate data from presentation
 * The core of your programs is the problem domain’s data and logic.
-* Your presentation layer (UI’s, PDF’s …) should be detangled from domain logic.
+* Your presentation layer (UI’s, PDF’s …) should be detached from domain logic.
 * Do the main computations in domain logic, have “dumb” presentation code.
 
 # 7.- Inject your functional dependencies
