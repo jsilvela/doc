@@ -127,6 +127,7 @@ and magneto-hydrodynamics.
 
 	func AnimationLoop() {
 		forever {
+			Sleep(deltaT)
 			canvas = clearCanvas()
 			for foe in AllFoes {
 				if foe is Relativistic {
@@ -142,12 +143,12 @@ and magneto-hydrodynamics.
 # 5.- Separate interface from implementation
 ## Example 4/5
 Let's do it another way. The animation loop requires only that enemies be
-able to compute their next state, and that they be able to draw
-themselves on a canvas.
+able to compute their next state after some time has elapsed, and that
+they be able to draw themselves on a canvas.
 
 Giulio's new code: 
 
-	func NextState(t time.Time) {...}
+	func NextState(dt time.Interval) {...}
 	func DrawOn(canvas Canvas) {...}
 	-- Hidden ---
 	func GravityAt(...) {...}
@@ -155,7 +156,7 @@ Giulio's new code:
 
 Nuria's new code:
 
-	func NextState(t time.Time) {...}
+	func NextState(dt time.Interval) {...}
 	func DrawOn(canvas Canvas) {...}
 	-- Hidden ---
 	func MagneticFieldAt(...) {...}
@@ -167,13 +168,18 @@ The new animation loop.
 
 	func AnimationLoop() {
 		forever {
+			Sleep(deltaT)
 			canvas = clearCanvas()
 			for foe in AllFoes {
-				foe.NextState(t)
+				foe.NextState(deltaT)
 				foe.DrawOn(canvas)
 			}
 		}
 	}
+
+Everything is more robust. Nuria can change her implementation details if she
+wants, as long as she upholds the interface. Giulio can use his code
+for another simulation that expects the same interface.
 
 # 6.- Separate data from presentation
 * The core of your programs is the problem domain’s data and logic.
@@ -191,7 +197,7 @@ The new animation loop.
 * Test interfaces.
 * Testing low level implementation detail is not as clearly beneficial.
 
-[Talk with James Coplien and Bob Martin on TDD](https://youtu.be/KtHQGs3zFAM)
+[James Coplien on unit testing](http://rbcs-us.com/documents/Why-Most-Unit-Testing-is-Waste.pdf)
 
 # 9.- Limit your external dependencies
 * You may like an external library that makes something easier for you.
@@ -205,14 +211,14 @@ The new animation loop.
 
 # 10.- Use good tools
 * Use version control. Even for small projects. Even for documentation.
-* Use a good programming text editor. Eg: Emacs, Visual Studio Code, Atom.
-* Use a font meant for coding. ```0 = O? 1 = l?```. Eg. Consolas, Source Code Pro.
+* Use a good programming text editor. Eg: Visual Studio Code, Emacs, Atom.
+* Use a font meant for coding. ```0 = O? 1 = l = I?```. Eg. Consolas, Source Code Pro.
 * Use linters. Especially for dynamic languages (Javascript, Python, Ruby.)
 * Collect notes, bugs, TODO items, in a file(s) where you look often.
 * If you’re in a team, share that info. Maybe JIRA? (awful but useful)
 
 # 11.- A few gotchas
-* Floating point numbers are not exact. **0.2 + 0.1 ≠ 0.3**
+* Floating point numbers are not exact. **0.2 + 0.1 ≠ 0.3**. Really.
 * Text encoding: try to read/store all text as UTF-8. Verify.
 * Case sensitivity; most modern stuff is case-sensitive. But …
 * Case in-sensitive: SQL, Windows file names*, Fortran, Lisp.
